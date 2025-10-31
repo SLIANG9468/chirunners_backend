@@ -17,7 +17,7 @@ class Runner(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     first_name:Mapped[str] = mapped_column(String(100),nullable = False)
     #For visitors, they may only submit firstname without lastname. Using Frontend to control nullable = False for members
-    last_name:Mapped[str] = mapped_column(String(100),nullable = True)
+    last_name:Mapped[str] = mapped_column(String(100), nullable = True)
     email: Mapped[str] = mapped_column(String(360), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(500), nullable=False)
     address_street:Mapped[str] = mapped_column(String(500), nullable=True)
@@ -37,14 +37,14 @@ class Team(Base):
     __tablename__ = 'teams'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    team_name:Mapped[str] = mapped_column(String(300),nullable = False)
+    team_name:Mapped[str] = mapped_column(String(300),nullable=False, unique=True)
     country:Mapped[str] = mapped_column(String(300), nullable=False)
     city:Mapped[str] = mapped_column(String(300), nullable=True)
-    contact_name:Mapped[str] = mapped_column(String(300),nullable = True)
-    contact_email: Mapped[str] = mapped_column(String(360), nullable=False, unique=True)
-    regular_group_run:Mapped[str] = mapped_column(Integer)
+    contact_name:Mapped[str] = mapped_column(String(300),nullable=True)
+    contact_email:Mapped[str] = mapped_column(String(300),nullable=True)
+    regular_group_run:Mapped[int] = mapped_column(Integer, nullable=True)
 
-    team_runner_roles:Mapped[list['Team_Runner_Role']] = relationship('Team_Runner_Role', back_populates='runner')
+    team_runner_roles:Mapped[list['Team_Runner_Role']] = relationship('Team_Runner_Role', back_populates='team')
 
 # Each runner can belong to multiple teams, and each team can include multiple runners.
 # A runner can have one specific role (e.g., member, volunteer, admin, board) within each team.
@@ -57,6 +57,7 @@ class Team_Runner_Role(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     team_id:Mapped[int] = mapped_column(ForeignKey('teams.id'),nullable = False)
     runner_id:Mapped[int] = mapped_column(ForeignKey('runners.id'),nullable = False)
-    role:Mapped[str] = mapped_column(String(100), nullable=False)
+    role:Mapped[str] = mapped_column(String(100), nullable=False, default='member')
 
     runner: Mapped['Runner'] = relationship('Runner', back_populates='team_runner_roles')
+    team:Mapped['Team'] = relationship('Team', back_populates='team_runner_roles')
