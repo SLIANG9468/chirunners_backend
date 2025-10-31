@@ -31,6 +31,8 @@ class Runner(Base):
     waivers_sign_timestamp:Mapped[datetime] = mapped_column(DateTime, nullable=True)
     expiration_date: Mapped[date] = mapped_column(Date, nullable=True)
 
+    team_runner_roles:Mapped[list['Team_Runner_Role']] = relationship('Team_Runner_Role', back_populates='runner')
+
 class Team(Base):
     __tablename__ = 'teams'
 
@@ -42,6 +44,13 @@ class Team(Base):
     contact_email: Mapped[str] = mapped_column(String(360), nullable=False, unique=True)
     regular_group_run:Mapped[str] = mapped_column(Integer)
 
+    team_runner_roles:Mapped[list['Team_Runner_Role']] = relationship('Team_Runner_Role', back_populates='runner')
+
+# Each runner can belong to multiple teams, and each team can include multiple runners.
+# A runner can have one specific role (e.g., member, volunteer, admin, board) within each team.
+# If a runner holds an admin or board role, they must also be a member and volunteer in that team.
+# The combination of (team_id, runner_id) must be unique — one role per runner per team.
+
 class Team_Runner_Role(Base):
     __tablename__ = 'team_runner_role'
 
@@ -50,3 +59,4 @@ class Team_Runner_Role(Base):
     runner_id:Mapped[int] = mapped_column(ForeignKey('runners.id'),nullable = False)
     role:Mapped[str] = mapped_column(String(100), nullable=False)
 
+    runner: Mapped['Runner'] = relationship('Runner', back_populates='team_runner_roles')
