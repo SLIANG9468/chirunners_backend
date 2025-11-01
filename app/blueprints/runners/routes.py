@@ -1,13 +1,31 @@
 from flask import request, jsonify
 from app.models import Runner, db
-from app.util.auth import encode_token
-from .schemas import runner_schema, runners_schema
+from app.util.auth import encode_token, token_required
+from .schemas import runner_schema, runners_schema, login_schema
 from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import runners_bp
 
 #Login
+@runners_bp.route('/login', methods=['POST'])
+def login():
+    print("In login session ->")
+    try:
+        data = login_schema.load(request.json) #unpacking email and password
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    
+    runner = db.session.query(Runner).where(Runner.email == data['email']).first() #checking if a runner belongs to this email
 
+    if runner and check_password_hash(runner.password, data['password']): #If we found a runner with that email, then check that runners email against the email that was passed in
+        token = encode_token(runner.id, runner.role)
+        return jsonify({
+            "message": "Successfully logged in",
+            "token": token,
+            "runner": runner_schema.dump(runner)
+        }), 200
+    
+    return jsonify({'error': 'invalid email or password'}), 404
 
 #Register/Create Runner
 @runners_bp.route('', methods=['POST'])
@@ -50,9 +68,12 @@ def get_runners():
     return runners_schema.jsonify(runners), 200
 
 #Update Profile
-@runners_bp.route('/<int:runner_id>', methods=['PUT'])
+@runners_bp.route('', methods=['PUT'])
+@token_required
 
-def update_runner(runner_id):
+def update_runner():
+
+    runner_id = request.runner_id
 
     runner = db.session.get(Runner,runner_id)
 
@@ -77,7 +98,11 @@ def update_runner(runner_id):
 
 #Delete Profile
 @runners_bp.route('/<int:runner_id>', methods=['DELETE'])
-def delete_runner(runner_id):
+@token_required
+
+def delete_runner():
+    runner_id = request.runner_id
+
     runner = db.session.get(Runner, runner_id)
     if runner:
         db.session.delete(runner)

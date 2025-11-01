@@ -9,4 +9,4 @@ class RunnerSchema(ma.SQLAlchemyAutoSchema):
 
 runner_schema = RunnerSchema()
 runners_schema = RunnerSchema(many=True) #handle a list of runners
-#login_schema = RunnerSchema(only=["email", "password"])
+login_schema = RunnerSchema(only=["email", "password"])
