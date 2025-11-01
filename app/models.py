@@ -11,6 +11,19 @@ class Base(DeclarativeBase):
 #Instatiate db and set Base model
 db = SQLAlchemy(model_class=Base)
 
+class Team(Base):
+    __tablename__ = 'teams'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    team_name:Mapped[str] = mapped_column(String(300),nullable=False, unique=True)
+    country:Mapped[str] = mapped_column(String(300), nullable=False)
+    city:Mapped[str] = mapped_column(String(300), nullable=True)
+    contact_name:Mapped[str] = mapped_column(String(300),nullable=True)
+    contact_email:Mapped[str] = mapped_column(String(300),nullable=True)
+    regular_group_run:Mapped[int] = mapped_column(Integer, nullable=True)
+
+    runners: Mapped[list['Runner']] = relationship('Runner', back_populates='team')
+
 class Runner(Base):
     __tablename__ = 'runners'
 
@@ -30,16 +43,8 @@ class Runner(Base):
     wechat_id:Mapped[str] = mapped_column(String(100), nullable=True)
     waivers_sign_timestamp:Mapped[datetime] = mapped_column(DateTime, nullable=True)
     expiration_date: Mapped[date] = mapped_column(Date, nullable=True)
-    team_id: Mapped[int] = mapped_column(Integer, nullable = True)
-    team_role:Mapped[str] = mapped_column(String(100), nullable=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey('teams.id'), nullable = True)
+    role:Mapped[str] = mapped_column(String(100), nullable=True)
 
-class Team(Base):
-    __tablename__ = 'teams'
+    team: Mapped['Team'] = relationship('Team', back_populates='runners')
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    team_name:Mapped[str] = mapped_column(String(300),nullable=False, unique=True)
-    country:Mapped[str] = mapped_column(String(300), nullable=False)
-    city:Mapped[str] = mapped_column(String(300), nullable=True)
-    contact_name:Mapped[str] = mapped_column(String(300),nullable=True)
-    contact_email:Mapped[str] = mapped_column(String(300),nullable=True)
-    regular_group_run:Mapped[int] = mapped_column(Integer, nullable=True)

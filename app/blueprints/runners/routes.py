@@ -1,5 +1,6 @@
 from flask import request, jsonify
 from app.models import Runner, db
+from app.util.auth import encode_token
 from .schemas import runner_schema, runners_schema
 from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
