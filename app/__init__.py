@@ -18,5 +18,5 @@ def create_app(config_name):
 
     app.register_blueprint(runners_bp,url_prefix='/runners')
     app.register_blueprint(teams_bp,url_prefix='/teams')
-    
+
     return app
