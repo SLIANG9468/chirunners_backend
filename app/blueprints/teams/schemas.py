@@ -14,6 +14,7 @@ class TeamRunnerRoleSchema(ma.SQLAlchemyAutoSchema):
     runner = fields.Nested("RunnerSchema")
     class Meta:
         model = Team_Runner_Role
+        include_fk = True
         fields = ("runner", "role")
 
 team_runner_role_schema = TeamRunnerRoleSchema()

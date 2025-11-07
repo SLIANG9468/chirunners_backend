@@ -140,7 +140,7 @@ def accept_invite(team_id):
         return jsonify({"error": f"Invalid team_id"}), 400
 
 
-#Reject Invite   
+#REJECT INVITE 
 @runners_bp.route("/decline-invite/<int:team_id>", methods=['DELETE']) 
 @token_required
 def decline_invite(team_id):
@@ -158,3 +158,19 @@ def decline_invite(team_id):
     else:
         return jsonify({"error": f"Invalid team_id"}), 400
         
+#ADD TO TEAM
+@runners_bp.route("/add-to-team/<int:team_id>", methods=['POST']) 
+@token_required
+def add_to_team(team_id):
+
+    runner = db.session.get(Runner, request.runner_id)
+    team = db.session.get(Team, team_id)
+
+    if runner and team:
+
+        team_runner_role = Team_Runner_Role(runner_id=runner.id, team_id=team.id, role = "member")
+        db.session.add(team_runner_role)
+        db.session.commit()
+        return jsonify({"message": f"Welcome to join {team.team_name}!"}), 200
+    else:
+        return jsonify({"error": f"Invalid team_id"}), 400
