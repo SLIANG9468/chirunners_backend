@@ -54,7 +54,7 @@ def create_runner():
         "runner": runner_schema.dump(new_runner)
     }), 201
 
-# #View Profile - Token Auth Eventually
+# #View Profile - Token Auth Teamually
 @runners_bp.route('/<int:runner_id>', methods=['GET'])
 def get_runner(runner_id):
     runner = db.session.get(Runner, runner_id)
@@ -138,3 +138,23 @@ def accept_invite(team_id):
             return jsonify({"error": f"You are not invited to this team"}), 400
     else:
         return jsonify({"error": f"Invalid team_id"}), 400
+
+
+#Reject Invite   
+@runners_bp.route("/decline-invite/<int:team_id>", methods=['DELETE']) 
+@token_required
+def decline_invite(team_id):
+
+    runner = db.session.get(Runner, request.runner_id)
+    team = db.session.get(Team, team_id)
+
+    if runner and team:
+        if team in runner.invites:
+            runner.invites.remove(team)
+            db.session.commit()
+            return jsonify({"message": f"Invite to {team.team_name} Declined."}), 200
+        else:
+            return jsonify({"error": f"You are not invited to this team."}), 400
+    else:
+        return jsonify({"error": f"Invalid team_id"}), 400
+        
