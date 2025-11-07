@@ -106,15 +106,12 @@ def invite_runner(team_id, runner_id):
         runner = session.get(Runner, runner_id)
         print(runner)
         if team and runner:
-            if team.team_contact_id == int(request.runner_id):
-                if runner not in team.invites:
-                    team.invites.append(runner)
-                    session.commit()
-                    return jsonify({"message": f"Successfully invited {runner.first_name}"})
-                else:
-                    return jsonify({"Error": "runner already invited."}), 400
+            if runner not in team.invites:
+                team.invites.append(runner)
+                session.commit()
+                return jsonify({"message": f"Successfully invited {runner.first_name}"})
             else:
-                return jsonify({"Error": "You must be the team contact to invite runners"}), 400
+                return jsonify({"Error": "runner already invited."}), 400
         else:
             return jsonify({"Error": "Invalid team_id or runner_id."}), 400
         

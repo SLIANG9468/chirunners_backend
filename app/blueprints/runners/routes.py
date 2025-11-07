@@ -2,10 +2,11 @@ from flask import request, jsonify
 from app.models import Runner, db
 from app.util.auth import encode_token, token_required
 from .schemas import runner_schema, runners_schema, login_schema
+from ..teams.schemas import team_schema, teams_schema
 from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import runners_bp
-
+from sqlalchemy.orm import Session
 # #Login
 @runners_bp.route('/login', methods=['POST'])
 def login():
@@ -109,3 +110,10 @@ def delete_runner():
         db.session.commit()
         return jsonify({"message": "successfully deleted runner."}), 200
     return jsonify({"error": "invalid runner id"}), 404
+
+
+#View My Invites
+@runners_bp.route('/my-invites', methods=['GET'])
+@token_required
+def my_invites():
+    return teams_schema.jsonify(db.session.get(Runner, request.runner_id).invites), 200
