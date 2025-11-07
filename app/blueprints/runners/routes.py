@@ -6,7 +6,7 @@ from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import runners_bp
 
-#Login
+# #Login
 @runners_bp.route('/login', methods=['POST'])
 def login():
     print("In login session ->")
@@ -18,7 +18,7 @@ def login():
     runner = db.session.query(Runner).where(Runner.email == data['email']).first() #checking if a runner belongs to this email
 
     if runner and check_password_hash(runner.password, data['password']): #If we found a runner with that email, then check that runners email against the email that was passed in
-        token = encode_token(runner.id, runner.role)
+        token = encode_token(runner.id, runner.gender)
         return jsonify({
             "message": "Successfully logged in",
             "token": token,
@@ -27,7 +27,7 @@ def login():
     
     return jsonify({'error': 'invalid email or password'}), 404
 
-#Register/Create Runner
+# Create Runner
 @runners_bp.route('', methods=['POST'])
 def create_runner():
     #load validata the request data
@@ -53,7 +53,7 @@ def create_runner():
         "runner": runner_schema.dump(new_runner)
     }), 201
 
-#View Profile - Token Auth Eventually
+# #View Profile - Token Auth Eventually
 @runners_bp.route('/<int:runner_id>', methods=['GET'])
 def get_runner(runner_id):
     runner = db.session.get(Runner, runner_id)
@@ -61,18 +61,18 @@ def get_runner(runner_id):
         return runner_schema.jsonify(runner), 200
     return jsonify({"error": "invalid runner id"}), 400
 
-#View All Runners
+# #View All Runners
 @runners_bp.route('', methods=['GET'])
 def get_runners():
     runners = db.session.query(Runner).all()
     return runners_schema.jsonify(runners), 200
 
-#Update Profile
+# #Update Profile
 @runners_bp.route('', methods=['PUT'])
 @token_required
 
 def update_runner():
-
+    
     runner_id = request.runner_id
 
     runner = db.session.get(Runner,runner_id)
@@ -96,8 +96,8 @@ def update_runner():
         "runner": runner_schema.dump(runner)
     }), 200
 
-#Delete Profile
-@runners_bp.route('/<int:runner_id>', methods=['DELETE'])
+# #Delete Profile
+@runners_bp.route('', methods=['DELETE'])
 @token_required
 
 def delete_runner():
