@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from app.models import Runner, db
+from app.models import Runner, db, Team, Team_Runner_Role
 from app.util.auth import encode_token, token_required
 from .schemas import runner_schema, runners_schema, login_schema
 from ..teams.schemas import team_schema, teams_schema
@@ -117,3 +117,24 @@ def delete_runner():
 @token_required
 def my_invites():
     return teams_schema.jsonify(db.session.get(Runner, request.runner_id).invites), 200
+
+#ACCEPT INVITE
+@runners_bp.route("/accept-invite/<int:team_id>", methods=['PUT']) 
+@token_required
+def accept_invite(team_id):
+
+    runner = db.session.get(Runner, request.runner_id)
+    team = db.session.get(Team, team_id)
+    print(team)
+    print(runner.invites)
+    if runner and team:
+        if team in runner.invites:
+            team_runner_role = Team_Runner_Role(runner_id=runner.id, team_id=team.id, role = "member")
+            db.session.add(team_runner_role)
+            runner.invites.remove(team)
+            db.session.commit()
+            return jsonify({"message": f"Invite to {team.team_name} Accepted"}), 200
+        else:
+            return jsonify({"error": f"You are not invited to this team"}), 400
+    else:
+        return jsonify({"error": f"Invalid team_id"}), 400
