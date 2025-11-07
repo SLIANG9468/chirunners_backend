@@ -169,8 +169,37 @@ def add_to_team(team_id):
     if runner and team:
 
         team_runner_role = Team_Runner_Role(runner_id=runner.id, team_id=team.id, role = "member")
-        db.session.add(team_runner_role)
-        db.session.commit()
-        return jsonify({"message": f"Welcome to join {team.team_name}!"}), 200
+
+        if not db.session.query(Team_Runner_Role).filter_by(runner_id=runner.id, team_id=team.id).first:
+            db.session.add(team_runner_role)
+            db.session.commit()
+            return jsonify({"message": f"Welcome to join {team.team_name}!"}), 200
+        else:
+            return jsonify({"Error": f"Runner already in the {team.team_name}!"}), 400
+    else:
+        return jsonify({"error": f"Invalid team_id"}), 400
+    
+#Remove From TEAM
+@runners_bp.route("/remove-from-team/<int:team_id>", methods=['DELETE']) 
+@token_required
+def remove_from_team(team_id):
+
+    runner = db.session.get(Runner, request.runner_id)
+    team = db.session.get(Team, team_id)
+
+    if runner and team:
+
+        existing = db.session.query(Team_Runner_Role).filter_by(
+            runner_id=runner.id,
+            team_id=team.id
+        ).first()
+
+        if existing:
+            # delete the association row
+            db.session.delete(existing)
+            db.session.commit()
+            return jsonify({"message": f"You are removed from {team.team_name}."}), 200
+        else:
+            return jsonify({"error": f"Runner is not a member of {team.team_name}."}), 400
     else:
         return jsonify({"error": f"Invalid team_id"}), 400
