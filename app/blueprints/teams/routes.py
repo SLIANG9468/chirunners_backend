@@ -15,20 +15,28 @@ def create_team():
     
     try:
         input_data = request.json
-        if 'team_contact_id' not in input_data:
+        is_creator = 'team_contact_id' not in input_data
+
+        if is_creator:
             input_data['team_contact_id']= request.runner_id
         data = team_schema.load(input_data)
         
-        # Check if team name already exists
         existing_team = db.session.query(Team).where(Team.team_name == data['team_name']).first()
         if existing_team:
             return jsonify({'error': 'team_name already exist.'}), 400
-        
-        # Validate and create new team
 
         new_team = Team(**data)
         db.session.add(new_team)
-        db.session.commit()  
+        db.session.flush()  
+        if is_creator:
+            new_team_runner_role = Team_Runner_Role(
+                team_id = new_team.id,
+                runner_id = request.runner_id,
+                role = 'member'
+            )
+            db.session.add(new_team_runner_role)
+        
+        db.session.commit()
 
     except ValidationError as e:
         return jsonify(e.messages), 400 
