@@ -12,22 +12,27 @@ from . import teams_bp
 @teams_bp.route('', methods=['POST'])
 @token_required
 def create_team():
-    #load validata the request data
+    
     try:
-        data = team_schema.load(request.json)
+        input_data = request.json
+        if 'team_contact_id' not in input_data:
+            input_data['team_contact_id']= request.runner_id
+        data = team_schema.load(input_data)
+        
+        # Check if team name already exists
+        existing_team = db.session.query(Team).where(Team.team_name == data['team_name']).first()
+        if existing_team:
+            return jsonify({'error': 'team_name already exist.'}), 400
+        
+        # Validate and create new team
+
+        new_team = Team(**data)
+        db.session.add(new_team)
+        db.session.commit()  
+
     except ValidationError as e:
         return jsonify(e.messages), 400 
-    
-    team = db.session.query(Team).where(Team.team_name == data['team_name']).first() #Checking if a team exist in my db who has the same name as the one passed in
-    if team:
-        return jsonify({'error': 'team_name already exist.'}), 400
-    
-    new_team = Team(**data) #Create new team
-    db.session.add(new_team)
-    db.session.commit()
-    #create a new Team in my database
 
-    #send a response
     return jsonify({
         "message": "successfully create team",
         "team": team_schema.dump(new_team)
