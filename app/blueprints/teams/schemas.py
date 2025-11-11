@@ -3,6 +3,7 @@ from app.models import Team, Team_Runner_Role
 from marshmallow import fields
 
 class TeamSchema(ma.SQLAlchemyAutoSchema):
+    team_contact = fields.Nested("RunnerSchema", only=("first_name", "last_name"))
     class Meta:
         model = Team
         include_fk = True
