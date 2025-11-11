@@ -29,6 +29,7 @@ class Team(Base):
 
     invites: Mapped[list['Runner']] = relationship(secondary="team_invites", back_populates='invites')
     team_runner_roles: Mapped[list['Team_Runner_Role']] = relationship(back_populates='team')
+    team_contact: Mapped['Runner'] = relationship(back_populates='created_teams')
 
 class Runner(Base):
     __tablename__ = 'runners'
@@ -50,6 +51,7 @@ class Runner(Base):
     waivers_sign_timestamp:Mapped[datetime] = mapped_column(DateTime, nullable=True)
     expiration_date: Mapped[date] = mapped_column(Date, nullable=True)
 
+    created_teams: Mapped[list['Team']] = relationship(back_populates='team_contact')
     team_runner_roles: Mapped[list['Team_Runner_Role']] = relationship(back_populates='runner')
     invites: Mapped[list['Team']] = relationship(secondary="team_invites",back_populates='invites')
 
