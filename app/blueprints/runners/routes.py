@@ -6,7 +6,7 @@ from ..teams.schemas import team_schema, teams_schema
 from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import runners_bp
-from sqlalchemy.orm import Session
+
 # #Login
 @runners_bp.route('/login', methods=['POST'])
 def login():
@@ -54,7 +54,7 @@ def create_runner():
         "runner": runner_schema.dump(new_runner)
     }), 201
 
-# #View Profile - Token Auth Teamually
+# View Profile - Token Auth Teamually
 @runners_bp.route('/<int:runner_id>', methods=['GET'])
 def get_runner(runner_id):
     runner = db.session.get(Runner, runner_id)
@@ -93,7 +93,7 @@ def update_runner():
 
     db.session.commit()
     return jsonify({
-        "message": "successfully upadated account",
+        "message": "Successfully updated Runner Profile",
         "runner": runner_schema.dump(runner)
     }), 200
 
@@ -170,11 +170,12 @@ def add_to_team(team_id):
 
         team_runner_role = Team_Runner_Role(runner_id=runner.id, team_id=team.id, role = "member")
 
-        if not db.session.query(Team_Runner_Role).filter_by(runner_id=runner.id, team_id=team.id).first:
+        if not db.session.query(Team_Runner_Role).filter_by(runner_id=runner.id, team_id=team.id).first():
             db.session.add(team_runner_role)
             db.session.commit()
             return jsonify({"message": f"Welcome to join {team.team_name}!"}), 200
         else:
+            print(f"team Id: {team.id} and runner ID: {runner.id}")
             return jsonify({"Error": f"Runner already in the {team.team_name}!"}), 400
     else:
         return jsonify({"error": f"Invalid team_id"}), 400

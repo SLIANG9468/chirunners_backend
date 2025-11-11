@@ -96,17 +96,20 @@ def delete_team(team_id):
     return jsonify({"error": "invalid team id"}), 404
 
 
-# #View Team Runners
-# @teams_bp.route('/<int:team_id>/runners', methods=['GET'])
-# @token_required
-# def team_runners(team_id):
+#View Team Runners
+@teams_bp.route('/<int:team_id>/runners', methods=['GET'])
+@token_required
+def team_runners(team_id):
 
-#     with Session(db.engine) as session:
-#         team = session.get(Team, team_id)
-#         team_runners = session.query(Team_Runner_Role).filter_by(team_id=team_id).all()
-#         return jsonify({"runners": team_runner_roles_schema.dump(team_runners),
-#                         "team": team_schema.dump(team),
-#                         "invited": runners_schema.dump(team.invites)}),200
+        team = db.session.get(Team, team_id)
+
+        if not team:
+            return jsonify({"error": "Invalid team id"}), 404
+
+        team_runners = db.session.query(Team_Runner_Role).filter_by(team_id=team_id).all()
+        return jsonify({"runners": team_runner_roles_schema.dump(team_runners),
+                        "team": team_schema.dump(team),
+                        "invited": runners_schema.dump(team.invites)}),200
 
     
 #INVITE Runner
