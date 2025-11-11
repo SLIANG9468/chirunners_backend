@@ -95,6 +95,12 @@ def delete_team(team_id):
         return jsonify({"message": "successfully deleted team."}), 200
     return jsonify({"error": "invalid team id"}), 404
 
+#My Team
+@teams_bp.route('/my-teams', methods=['GET'])
+@token_required
+def get_my_teams():
+    my_teams = db.session.query(Team).join(Team_Runner_Role).filter_by(runner_id = request.runner_id).all()
+    return jsonify(teams_schema.dump(my_teams))
 
 #View Team Runners
 @teams_bp.route('/<int:team_id>/runners', methods=['GET'])

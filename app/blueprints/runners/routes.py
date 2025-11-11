@@ -7,7 +7,7 @@ from marshmallow import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import runners_bp
 
-# #Login
+#Login
 @runners_bp.route('/login', methods=['POST'])
 def login():
     print("In login session ->")
@@ -62,13 +62,13 @@ def get_runner(runner_id):
         return runner_schema.jsonify(runner), 200
     return jsonify({"error": "invalid runner id"}), 400
 
-# #View All Runners
+#View All Runners
 @runners_bp.route('', methods=['GET'])
 def get_runners():
     runners = db.session.query(Runner).all()
     return runners_schema.jsonify(runners), 200
 
-# #Update Profile
+#Update Profile
 @runners_bp.route('', methods=['PUT'])
 @token_required
 
