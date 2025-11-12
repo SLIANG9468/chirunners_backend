@@ -1,7 +1,7 @@
 #Where I will initialize SQLAlchemy and create my models
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Date, Integer, DateTime, String, ForeignKey, Table
+from sqlalchemy import Date, Integer, DateTime, String, ForeignKey, Table, UniqueConstraint
 from datetime import datetime, date
 
 #Create Base Model to be inherited from
@@ -62,6 +62,9 @@ class Runner(Base):
 
 class Team_Runner_Role(Base):
     __tablename__ = 'team_runner_roles'
+    __table_args__ = (
+        UniqueConstraint('team_id', 'runner_id', name='unique_team_runner'),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     team_id:Mapped[int] = mapped_column(ForeignKey('teams.id'),nullable = False)

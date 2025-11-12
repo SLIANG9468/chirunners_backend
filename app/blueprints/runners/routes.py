@@ -68,7 +68,7 @@ def get_runners():
     runners = db.session.query(Runner).all()
     return runners_schema.jsonify(runners), 200
 
-#Update Profile
+# #Update Profile
 @runners_bp.route('', methods=['PUT'])
 @token_required
 

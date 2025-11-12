@@ -1,11 +1,9 @@
 from flask import request, jsonify
 from app.models import Team, db, Team_Runner_Role, Runner
-from sqlalchemy.orm import Session
 from app.util.auth import encode_token, token_required
 from .schemas import team_schema, teams_schema, team_runner_role_schema, team_runner_roles_schema
 from ..runners.schemas import runner_schema, runners_schema
 from marshmallow import ValidationError
-from werkzeug.security import generate_password_hash, check_password_hash
 from . import teams_bp
 
 #Create Team
@@ -80,7 +78,7 @@ def update_team(team_id):
 
     db.session.commit()
     return jsonify({
-        "message": "successfully upadated account",
+        "message": "successfully updated account",
         "team": team_schema.dump(team)
     }), 200
 
@@ -100,7 +98,7 @@ def delete_team(team_id):
 @token_required
 def get_my_teams():
     my_teams = db.session.query(Team).join(Team_Runner_Role).filter_by(runner_id = request.runner_id).all()
-    return jsonify(teams_schema.dump(my_teams))
+    return jsonify(teams_schema.dump(my_teams)), 200
 
 #View Team Runners
 @teams_bp.route('/<int:team_id>/runners', methods=['GET'])
@@ -117,23 +115,36 @@ def team_runners(team_id):
                         "team": team_schema.dump(team),
                         "invited": runners_schema.dump(team.invites)}),200
 
+#View My first Team's Runners
+@teams_bp.route('/runners', methods=['GET'])
+@token_required
+def myteam_runners():
+
+        my_team = db.session.query(Team_Runner_Role).filter_by(runner_id = request.runner_id).first()
+        
+        if not my_team:
+            return jsonify({"error": "You are not a member of any team"}), 404
+            
+        team_runners = db.session.query(Team_Runner_Role).filter_by(team_id = my_team.team_id).all()
+        return jsonify({"runners": team_runner_roles_schema.dump(team_runners),
+                        "team": team_schema.dump(my_team.team)}), 200
+
     
 #INVITE Runner
 @teams_bp.route('/<int:team_id>/invite-runner/<int:runner_id>', methods=["PUT"])
 @token_required
 def invite_runner(team_id, runner_id):
     print("in right route")
-    with Session(db.engine) as session:
-        team = session.get(Team, team_id)
-        runner = session.get(Runner, runner_id)
-        print(runner)
-        if team and runner:
-            if runner not in team.invites:
-                team.invites.append(runner)
-                session.commit()
-                return jsonify({"message": f"Successfully invited {runner.first_name}"})
-            else:
-                return jsonify({"Error": "runner already invited."}), 400
+    team = db.session.get(Team, team_id)
+    runner = db.session.get(Runner, runner_id)
+    print(runner)
+    if team and runner:
+        if runner not in team.invites:
+            team.invites.append(runner)
+            db.session.commit()
+            return jsonify({"message": f"Successfully invited {runner.first_name}"}), 200
         else:
-            return jsonify({"Error": "Invalid team_id or runner_id."}), 400
+            return jsonify({"Error": "runner already invited."}), 400
+    else:
+        return jsonify({"Error": "Invalid team_id or runner_id."}), 400
         
