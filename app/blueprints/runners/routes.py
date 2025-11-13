@@ -19,7 +19,7 @@ def login():
     runner = db.session.query(Runner).where(Runner.email == data['email']).first() #checking if a runner belongs to this email
 
     if runner and check_password_hash(runner.password, data['password']): #If we found a runner with that email, then check that runners email against the email that was passed in
-        token = encode_token(runner.id, runner.gender)
+        token = encode_token(runner.id, runner.email)
         return jsonify({
             "message": "Successfully logged in",
             "token": token,
@@ -86,7 +86,9 @@ def update_runner():
     except ValidationError as e:
         return jsonify(e.messages), 400
     
-    data['password'] = generate_password_hash(data['password'])
+    # Only hash password if it's being updated
+    if 'password' in data and data['password']:
+        data['password'] = generate_password_hash(data['password'])
 
     for key, value in data.items():
         setattr(runner, key, value)

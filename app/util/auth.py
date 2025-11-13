@@ -7,12 +7,12 @@ from flask import request, jsonify
 
 SECRET_KEY =  "super secret secrets"
 
-def encode_token(runner_id, role):
+def encode_token(runner_id, email):
     payload = {
         'exp': datetime.now(timezone.utc) + timedelta(days=1),  #expiration date
         'iat': datetime.now(timezone.utc),   #issued at
         'sub': str(runner_id), #need to convert to string or I will get an invalid token error when I try to decode
-        'role': role
+        'email': email
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') #encoding the token
