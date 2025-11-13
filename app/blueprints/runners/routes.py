@@ -11,12 +11,23 @@ from . import runners_bp
 @runners_bp.route('/login', methods=['POST'])
 def login():
     print("In login session ->")
+    print("Request JSON:", request.json)
+    print("Request Headers:", dict(request.headers))
+    
     try:
         data = login_schema.load(request.json) #unpacking email and password
+        print("Validated data:", data)
     except ValidationError as e:
+        print("Validation error:", e.messages)
         return jsonify(e.messages), 400
     
     runner = db.session.query(Runner).where(Runner.email == data['email']).first() #checking if a runner belongs to this email
+    print("Runner found:", runner)
+    
+    if runner:
+        print("Stored password hash:", runner.password)
+        print("Input password:", data['password'])
+        print("Password check result:", check_password_hash(runner.password, data['password']))
 
     if runner and check_password_hash(runner.password, data['password']): #If we found a runner with that email, then check that runners email against the email that was passed in
         token = encode_token(runner.id, runner.email)
@@ -26,6 +37,7 @@ def login():
             "runner": runner_schema.dump(runner)
         }), 200
     
+    print("Login failed - invalid credentials")
     return jsonify({'error': 'invalid email or password'}), 404
 
 # Create Runner
@@ -81,15 +93,20 @@ def update_runner():
     if not runner:
         return jsonify({"error": "Invalid Runner Id"}), 404
     
+    print("Update request JSON:", request.json)
+    
     try:
         data = runner_schema.load(request.json)
     except ValidationError as e:
         return jsonify(e.messages), 400
     
-    # Only hash password if it's being updated
-    if 'password' in data and data['password']:
-        data['password'] = generate_password_hash(data['password'])
-
+    print("Validated update data keys:", data.keys())
+    
+    # Remove password from update data - password cannot be changed
+    if 'password' in data:
+        del data['password']
+        print("Password removed from update - password cannot be changed")
+    
     for key, value in data.items():
         setattr(runner, key, value)
 
