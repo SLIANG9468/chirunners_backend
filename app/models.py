@@ -52,7 +52,7 @@ class Runner(Base):
     expiration_date: Mapped[date] = mapped_column(Date, nullable=True)
 
     created_teams: Mapped[list['Team']] = relationship(back_populates='team_contact')
-    team_runner_roles: Mapped[list['Team_Runner_Role']] = relationship(back_populates='runner')
+    team_runner_roles: Mapped[list['Team_Runner_Role']] = relationship(back_populates='runner', cascade='all, delete-orphan')
     invites: Mapped[list['Team']] = relationship(secondary="team_invites",back_populates='invites')
 
 # Each runner can belong to multiple teams, and each team can include multiple runners.
